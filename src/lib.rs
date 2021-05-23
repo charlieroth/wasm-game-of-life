@@ -44,6 +44,7 @@ pub struct Universe {
     width: u32,
     height: u32,
     cells: Vec<Cell>,
+    start_cells: Vec<Cell>,
 }
 
 /// Public methods, exported to JavaScript.
@@ -115,12 +116,14 @@ impl Universe {
         let width = 40;
         let height = 40;
         let size = (width * height) as usize;
-        let cells = (0..size).map(|_i| Cell::Dead).collect();
+        let cells: Vec<Cell> = (0..size).map(|_i| Cell::Dead).collect();
+        let start_cells = cells.clone();
 
         Universe {
             width,
             height,
             cells,
+            start_cells
         }
     }
 
@@ -132,7 +135,8 @@ impl Universe {
             } else {
                 return Cell::Dead;
             }
-        }).collect()
+        }).collect();
+        self.start_cells = self.cells.clone();
     }
     
     /// Purge cells in Universe
@@ -143,8 +147,7 @@ impl Universe {
     
     /// Reset cells in Universe
     pub fn reset(&mut self) {
-        let size = (self.width * self.height) as usize;
-        self.cells = (0..size).map(|_i| Cell::Dead).collect();
+        self.cells = self.start_cells.clone();
     }
 
     /// Helper for displaying Universe
