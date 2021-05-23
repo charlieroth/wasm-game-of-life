@@ -1,15 +1,18 @@
 mod utils;
 
 extern crate web_sys;
+extern crate js_sys;
 
 use wasm_bindgen::prelude::*;
 use std::fmt;
 
+/*
 macro_rules! log {
     ( $( $t:tt )* ) => {
         web_sys::console::log_1(&format!( $( $t )* ).into());
     }
 }
+*/
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -79,6 +82,7 @@ impl Universe {
                 let cell = self.cells[idx];
                 let live_neighbors = self.live_neighbor_count(row, col);
 
+                /* 
                 log!(
                     "cell[{}, {}] is initially {:?} and has {} live neighbors",
                     row,
@@ -86,25 +90,17 @@ impl Universe {
                     cell,
                     live_neighbors
                 );
+                */
 
                 let next_cell = match (cell, live_neighbors) {
-                    // Rule 1: Any live cell with fewer than two live neighbours
-                    // dies, as if caused by underpopulation.
                     (Cell::Alive, x) if x < 2 => Cell::Dead,
-                    // Rule 2: Any live cell with two or three live neighbours
-                    // lives on to the next generation.
                     (Cell::Alive, 2) | (Cell::Alive, 3) => Cell::Alive,
-                    // Rule 3: Any live cell with more than three live
-                    // neighbours dies, as if by overpopulation.
                     (Cell::Alive, x) if x > 3 => Cell::Dead,
-                    // Rule 4: Any dead cell with exactly three live neighbours
-                    // becomes a live cell, as if by reproduction.
                     (Cell::Dead, 3) => Cell::Alive,
-                    // All other cells remain in the same state.
                     (otherwise, _) => otherwise,
                 };
 
-                log!("      it becomes {:?}", next_cell);
+                // log!("      it becomes {:?}", next_cell);
 
                 next[idx] = next_cell;
             }
@@ -116,17 +112,39 @@ impl Universe {
     /// Create a new Universe with initial live cells
     pub fn new() -> Universe {
         utils::set_panic_hook();
-
         let width = 40;
         let height = 40;
-
-        let cells = (0..width * height).map(|i| Cell::Dead).collect();
+        let size = (width * height) as usize;
+        let cells = (0..size).map(|_i| Cell::Dead).collect();
 
         Universe {
             width,
             height,
             cells,
         }
+    }
+
+    pub fn random(&mut self) {
+        let size = (self.width * self.height) as usize;
+        self.cells = (0..size).map(|_i| {
+            if js_sys::Math::random() < 0.5 {
+                return Cell::Alive;
+            } else {
+                return Cell::Dead;
+            }
+        }).collect()
+    }
+    
+    /// Purge cells in Universe
+    pub fn purge(&mut self) {
+        let size = (self.width * self.height) as usize;
+        self.cells = (0..size).map(|_i| Cell::Dead).collect();
+    }
+    
+    /// Reset cells in Universe
+    pub fn reset(&mut self) {
+        let size = (self.width * self.height) as usize;
+        self.cells = (0..size).map(|_i| Cell::Dead).collect();
     }
 
     /// Helper for displaying Universe

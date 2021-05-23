@@ -2,9 +2,9 @@ import { Universe, Cell } from "wasm-game-of-life";
 import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
 
 const CELL_SIZE = 15; // size in pixels
-const GRID_COLOR = "#CCCCCC";
-const DEAD_COLOR = "#FFFFFF";
-const ALIVE_COLOR = "#000000";
+const GRID_COLOR = "#28292c";
+const ALIVE_COLOR = "#b0b4b9";
+const DEAD_COLOR = "#000000";
 
 const universe = Universe.new();
 const width = universe.width();
@@ -16,17 +16,15 @@ canvas.width = (CELL_SIZE + 1) * width + 1;
 
 const ctx = canvas.getContext('2d');
 
-const getIndex = (row, column) => {
+function getIndex(row, column) {
   return row * width + column;
-};
+}
 
-const drawCells = () => {
+function drawCells() {
   // Get cells from wasm
   const cellsPtr = universe.cells();
   // Create a copy of universe cells to modify
   const cells = new Uint8Array(memory.buffer, cellsPtr, width * height);
-
-
   // Draw cells
   ctx.beginPath();
   
@@ -48,18 +46,16 @@ const drawCells = () => {
   }
 
   ctx.stroke();
-};
+}
 
-const drawGrid = () => {
+function drawGrid() {
   ctx.beginPath();
   ctx.strokeStyle = GRID_COLOR;
-
   // Vertical lines
   for (let i = 0; i <= width; i++) {
     ctx.moveTo(i * (CELL_SIZE + 1) + 1, 0);
     ctx.lineTo(i * (CELL_SIZE + 1) + 1, (CELL_SIZE + 1) * height + 1);
   }
-
   // Horizontal lines
   for (let j = 0; j <= height; j++) {
     ctx.moveTo(0, j * (CELL_SIZE + 1) + 1);
@@ -67,44 +63,88 @@ const drawGrid = () => {
   }
 
   ctx.stroke();
-};
+}
 
 let animationFrameId = null;
 
-const renderLoop = () => {
+// The animation loop calculates time elapsed since the last loop
+// and only draws if your specified fps interval is achieved
+function animate() {
   drawGrid();
   drawCells();
   universe.tick();
-  animationFrameId = requestAnimationFrame(renderLoop);
-};
-
-const isPaused = () => {
-  return animationFrameId === null;
+  animationFrameId = requestAnimationFrame(animate);
 }
 
-const playPauseButton = document.getElementById("play-pause");
-playPauseButton.textContent = "Play";
+// Initialize the timer variables and start the animation
+function startAnimating() {
+  animate();
+}
 
-const play = () => {
-  playPauseButton.textContent = "Pause";
-  renderLoop();
-};
+const resetBtn = document.getElementById("reset-btn");
+const randomBtn = document.getElementById("random-btn");
+const purgeBtn = document.getElementById("purge-btn");
+const playPauseBtn = document.getElementById("play-pause");
+playPauseBtn.textContent = "Play";
 
-const pause = () => {
-  playPauseButton.textContent = "Play";
+function play() {
+  playPauseBtn.textContent = "Pause";
+  startAnimating();
+}
+
+function pause() {
+  playPauseBtn.textContent = "Play";
   cancelAnimationFrame(animationFrameId);
   animationFrameId = null;
-};
+}
 
-playPauseButton.addEventListener("click", event => {
-  if (isPaused()) {
+playPauseBtn.addEventListener("click", (e) => {
+  if (animationFrameId === null) {
     play();
   } else {
     pause();
   }
 });
 
-canvas.addEventListener("click", event => {
+randomBtn.addEventListener("click", (e) => {
+  if (animationFrameId === null) {
+    universe.random();
+    drawGrid();
+    drawCells();
+  } else {
+    pause();
+    universe.random();
+    drawGrid();
+    drawCells();
+  }
+});
+
+resetBtn.addEventListener("click", (e) => {
+  if (animationFrameId === null) {
+    universe.reset();
+    drawGrid();
+    drawCells();
+  } else {
+    pause();
+    universe.reset();
+    drawGrid();
+    drawCells();
+  }
+});
+
+purgeBtn.addEventListener("click", (e) => {
+  if (animationFrameId === null) {
+    universe.purge();
+    drawGrid();
+    drawCells();
+  } else {
+    universe.purge();
+    drawGrid();
+    drawCells();
+  }
+});
+
+canvas.addEventListener("click", (e) => {
   const boundingRect = canvas.getBoundingClientRect();
 
   const scaleX = canvas.width / boundingRect.width;
@@ -122,4 +162,7 @@ canvas.addEventListener("click", event => {
   drawCells();
 });
 
+
+// Draw initial grid and cells
 drawGrid();
+drawCells();

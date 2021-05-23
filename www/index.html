@@ -12,11 +12,23 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        background-color: #18191b;
+      }
+
+      #title {
+        color: white;
       }
     </style>
   </head>
   <body>
-    <button id="play-pause"></button>
+    <h1 id="title">Game Of Life</h1>
+    <div>
+      <button id="play-pause"></button>
+      <button id="reset-btn">Reset</button>
+      <button id="random-btn">Random</button>
+      <button id="purge-btn">Purge</button>
+    </div>
+    <br>
     <canvas id="game-of-life-canvas"></canvas>
     <script src="./bootstrap.js"></script>
   </body>
