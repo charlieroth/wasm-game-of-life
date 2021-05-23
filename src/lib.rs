@@ -27,10 +27,12 @@ pub struct Universe {
 
 #[wasm_bindgen]
 impl Universe {
-    fn get_index(&self, row: u32, column: u32) -> usize {
-        (row * self.width + column) as usize
+    /// Get the 2D grid index given row and col
+    fn get_index(&self, row: u32, col: u32) -> usize {
+        (row * self.width + col) as usize
     }
 
+    /// Get number of live neighbors for a given Cell position
     fn live_neighbor_count(&self, row: u32, col: u32) -> u8 {
         let mut count = 0;
         for drow in [self.height - 1, 0, 1].iter().cloned() {
@@ -48,6 +50,7 @@ impl Universe {
         count
     }
 
+    /// Represents the logic of an epoch in the Universe
     pub fn tick(&mut self) {
         let mut next = self.cells.clone();
 
@@ -81,6 +84,7 @@ impl Universe {
         self.cells = next;
     }
 
+    /// Create a new Universe with initial live cells
     pub fn new() -> Universe {
         let width = 40;
         let height = 40;
@@ -110,22 +114,40 @@ impl Universe {
         self.width
     }
 
-    pub set_width(&mut self, width: u32) {
+    /// Modify the width of the Universe and reset the grid
+    pub fn set_width(&mut self, width: u32) {
         self.width = width;
-        self.cells = (0..width * self.height).map(|_i Cell::Dead).collect();
+        self.cells = (0..width * self.height).map(|_i| Cell::Dead).collect();
     }
 
     pub fn height(&self) -> u32 {
         self.height
     }
 
-    pub set_height(&mut self, height: u32) {
+    /// Modify the height of the Universe and reset the grid
+    pub fn set_height(&mut self, height: u32) {
         self.height = height;
-        self.cells = (0..self.width * height).map(|_i Cell::Dead).collect();
+        self.cells = (0..self.width * height).map(|_i| Cell::Dead).collect();
     }
 
     pub fn cells(&self) -> *const Cell {
         self.cells.as_ptr()
+    }
+}
+
+impl Universe {
+    /// Get the dead and alive values of the whole universe
+    pub fn get_cells(&self) -> &[Cell] {
+        &self.cells
+    }
+
+    /// Set cells to be alive in a universe by passing the row and col
+    /// of each cell as an array
+    pub fn set_cells(&mut self, cells: &[(u32, u32)]) {
+        for (row, col) in cells.iter().cloned() {
+            let idx = self.get_index(row, col);
+            self.cells[idx] = Cell::Alive;
+        }
     }
 }
 
