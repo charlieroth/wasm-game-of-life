@@ -26,6 +26,16 @@ pub enum Cell {
     Alive = 1,
 }
 
+impl Cell {
+    fn toggle(&mut self) {
+        *self = match *self {
+            Cell::Dead => Cell::Alive,
+            Cell::Alive => Cell::Dead,
+        }
+    }
+}
+
+/// Universe struct, exported to JavaScript
 #[wasm_bindgen]
 pub struct Universe {
     width: u32,
@@ -33,6 +43,7 @@ pub struct Universe {
     cells: Vec<Cell>,
 }
 
+/// Public methods, exported to JavaScript.
 #[wasm_bindgen]
 impl Universe {
     /// Get the 2D grid index given row and col
@@ -109,15 +120,7 @@ impl Universe {
         let width = 40;
         let height = 40;
 
-        let cells = (0..width * height)
-            .map(|i| {
-                if i % 2 == 0 || i % 7 == 0 {
-                    Cell::Alive
-                } else {
-                    Cell::Dead
-                }
-            })
-            .collect();
+        let cells = (0..width * height).map(|i| Cell::Dead).collect();
 
         Universe {
             width,
@@ -126,10 +129,12 @@ impl Universe {
         }
     }
 
+    /// Helper for displaying Universe
     pub fn render(&self) -> String {
         self.to_string()
     }
 
+    /// Width of the Universe
     pub fn width(&self) -> u32 {
         self.width
     }
@@ -140,6 +145,7 @@ impl Universe {
         self.cells = (0..width * self.height).map(|_i| Cell::Dead).collect();
     }
 
+    /// Height of the Universe
     pub fn height(&self) -> u32 {
         self.height
     }
@@ -150,8 +156,15 @@ impl Universe {
         self.cells = (0..self.width * height).map(|_i| Cell::Dead).collect();
     }
 
+    /// Retrieve all cells in Universe
     pub fn cells(&self) -> *const Cell {
         self.cells.as_ptr()
+    }
+
+    /// Change the state of a cell to its opposite state
+    pub fn toggle_cell(&mut self, row: u32, col: u32) {
+        let idx = self.get_index(row, col);
+        self.cells[idx].toggle();
     }
 }
 
