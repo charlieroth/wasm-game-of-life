@@ -1,15 +1,16 @@
 import { Universe, Cell } from "wasm-game-of-life";
 import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
 
-const CELL_SIZE = 15; // px
+const CELL_SIZE = 15; // size in pixels
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
-const canvas = document.getElementById("game-of-life-canvas");
 const universe = Universe.new();
 const width = universe.width();
 const height = universe.height();
+
+const canvas = document.getElementById("game-of-life-canvas");
 canvas.height = (CELL_SIZE + 1) * height + 1;
 canvas.width = (CELL_SIZE + 1) * width + 1;
 
@@ -20,11 +21,15 @@ const getIndex = (row, column) => {
 };
 
 const drawCells = () => {
+  // Get cells from wasm
   const cellsPtr = universe.cells();
+  // Create a copy of universe cells to modify
   const cells = new Uint8Array(memory.buffer, cellsPtr, width * height);
 
-  ctx.beginPath();
 
+  // Draw cells
+  ctx.beginPath();
+  
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
       const idx = getIndex(row, col);
@@ -49,15 +54,15 @@ const drawGrid = () => {
   ctx.beginPath();
   ctx.strokeStyle = GRID_COLOR;
 
-  // Vertical lines.
+  // Vertical lines
   for (let i = 0; i <= width; i++) {
     ctx.moveTo(i * (CELL_SIZE + 1) + 1, 0);
     ctx.lineTo(i * (CELL_SIZE + 1) + 1, (CELL_SIZE + 1) * height + 1);
   }
 
-  // Horizontal lines.
+  // Horizontal lines
   for (let j = 0; j <= height; j++) {
-    ctx.moveTo(0,                           j * (CELL_SIZE + 1) + 1);
+    ctx.moveTo(0, j * (CELL_SIZE + 1) + 1);
     ctx.lineTo((CELL_SIZE + 1) * width + 1, j * (CELL_SIZE + 1) + 1);
   }
 
@@ -67,10 +72,8 @@ const drawGrid = () => {
 
 const renderLoop = () => {
   universe.tick();
-
   drawGrid();
   drawCells();
-
   requestAnimationFrame(renderLoop);
 };
  

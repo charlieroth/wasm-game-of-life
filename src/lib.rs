@@ -110,8 +110,18 @@ impl Universe {
         self.width
     }
 
+    pub set_width(&mut self, width: u32) {
+        self.width = width;
+        self.cells = (0..width * self.height).map(|_i Cell::Dead).collect();
+    }
+
     pub fn height(&self) -> u32 {
         self.height
+    }
+
+    pub set_height(&mut self, height: u32) {
+        self.height = height;
+        self.cells = (0..self.width * height).map(|_i Cell::Dead).collect();
     }
 
     pub fn cells(&self) -> *const Cell {
